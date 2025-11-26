@@ -2,3 +2,8 @@
 In this repo you will find different experiments on Graph-based models for recommendation. 
 
 The goal is to have a better understand of how these work.
+
+
+Install requirements (e.g. on pyenv)
+
+pip install -r requirements.txt
