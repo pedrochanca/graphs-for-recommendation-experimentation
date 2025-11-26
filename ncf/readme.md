@@ -4,7 +4,7 @@ Other people have done it -> https://github.com/guoyang9/NCF
 
 #### MLP approach of NCF
 
-###### Here is the step list:
+##### Here is the step list:
 
 1. **Start with user ID and item ID**
     - Those are your input features (in the paper: only IDs).
