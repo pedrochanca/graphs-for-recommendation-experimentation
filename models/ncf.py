@@ -3,14 +3,11 @@ import torch.nn as nn
 
 
 class SimpleNCF(nn.Module):
-    def __init__(self, n_users, n_items, emb_dim=32):
+    def __init__(self, n_users: int, n_items: int, emb_dim: int = 32):
         """
         emb_dim = 32
 
         item and user embeddings get concatenated, resulting in an embedding with 64d.
-
-        (original paper)
-        layers (3): 64d - 32d - 16d (2 hidden layers + output layer / last hidden layer)
         """
 
         super().__init__()
@@ -24,7 +21,7 @@ class SimpleNCF(nn.Module):
         # single linear layer: 64 -> 1
         self.output = nn.Linear(2 * emb_dim, 1)
 
-    def forward(self, user_ids, item_ids, targets=None):
+    def forward(self, user_ids, item_ids):
         """
         Zero hidden layers.
 
@@ -38,3 +35,19 @@ class SimpleNCF(nn.Module):
         output = self.output(x)
 
         return output
+
+
+class DeepNCF(nn.Module):
+    """
+    nn.Module - when we call the class, it automatically executes the forward function
+    """
+
+    def __init__(self, n_users, n_items, emb_dim=32):
+        """
+        (original paper)
+        layers (3): 64d - 32d - 16d (2 hidden layers + output layer / last hidden layer)
+        """
+        return None
+
+    def forward(self, user_ids, item_ids):
+        return None
