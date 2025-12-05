@@ -54,7 +54,7 @@ Here is the flow of data:
     5. Output:
         - Predicted Rating (e.g., 3.5).
 
-![SimpleNCF Architecture diagram](images/simple_ncf_architecture.png)
+![SimpleNCF Architecture diagram](images/simple_ncf_architecture.jpg)
 
 
 #### nn.Linear()
