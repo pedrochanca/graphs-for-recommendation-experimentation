@@ -100,7 +100,7 @@ To capture complex, non-linear interactions between user and item latent vectors
 
 For evaluation, we utilize the specific configuration of hidden layer dimensions that yielded the optimal performance during hyperparameter tuning.
 
-![DeepNCF Architecture diagram](images/simple_ncf_architecture.jpg)
+![DeepNCF Architecture diagram](images/deep_ncf_architecture.jpg)
 
 ### Model Architecture
 
