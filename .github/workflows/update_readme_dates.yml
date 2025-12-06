@@ -1,0 +1,61 @@
+name: Update README Dates
+on:
+  push:
+    branches:
+      - main # Or 'master', depending on your default branch name
+    paths:
+      - "README.md" # Only run the action if README.md has changed
+
+jobs:
+  update-dates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Important: Fetches all history needed to find creation date
+
+      - name: Calculate and Update Dates
+        id: dates
+        run: |
+          # 1. Get the date of the first commit (Creation Date)
+          CREATED_AT=$(git log --diff-filter=A --follow --format=%ad --date=format:'%Y-%m-%d' -- README.md | tail -1)
+
+          # 2. Get the date of the last commit (Last Updated)
+          LAST_UPDATED=$(git log -1 --format=%ad --date=format:'%Y-%m-%d' -- README.md)
+
+          # 3. Create the badge content (or just simple text)
+          # Note: We use sed to replace a placeholder line in the README
+
+          # Use simple Markdown text block for clarity
+          DATE_BLOCK="**Created At:** $CREATED_AT\n**Last Updated:** $LAST_UPDATED"
+
+          echo "Date block: $DATE_BLOCK"
+
+          # 4. Use 'sed' to replace a placeholder line in README.md
+          # It looks for a line starting with '' and replaces 
+          # it and the next lines up to '' with the new content.
+          # We use a unique marker to ensure only this specific block is updated.
+
+          # First, prepare the replacement string, escaping newlines for sed
+          REPLACEMENT=$(echo -e "\n$DATE_BLOCK\n")
+
+          # The sed command needs to be tailored for different systems/shells
+          # This version works well on Ubuntu runner:
+          sed -i -e '//,//c\'"$REPLACEMENT" README.md
+
+          # Check if the file was modified
+          if [ -n "$(git status --porcelain README.md)" ]; then
+            echo "::set-output name=files_changed::true"
+          else
+            echo "::set-output name=files_changed::false"
+          fi
+
+      - name: Commit and Push Changes (if file was updated)
+        if: steps.dates.outputs.files_changed == 'true'
+        uses: stefanprodan/git-ensure-action@v1 # A common action for automated commits
+        with:
+          commit_message: "🤖 chore: Auto-update README dates"
+          commit_author: "GitHub Actions <actions@github.com>"
+          push_repository: true
+          push_branch: ${{ github.ref_name }}
