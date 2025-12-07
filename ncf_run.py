@@ -203,17 +203,20 @@ def main():
     )
     parser.add_argument(
         "--plot",
-        type=bool,
-        default=False,
-        choices=[True, False],
-        help="Plot values: True or False",
+        action="store_true",  # Sets value to True if argument is present
+        help="Enable plotting",
+    )
+
+    parser.add_argument(
+        "--verbose",
+        action="store_true",  # Sets value to True if argument is present
+        help="Enable verbose",
     )
 
     args = parser.parse_args()
     MODEL_ARCHITECTURE = args.model
     PLOT = args.plot
-
-    VERBOSE = True
+    VERBOSE = args.verbose
 
     # Train parameters
     STEP_SIZE = 3
@@ -260,6 +263,7 @@ def main():
     )
 
     # Plot Loss
+    print(PLOT)
     if PLOT:
         plt.figure()
         plt.plot(all_losses_list)
