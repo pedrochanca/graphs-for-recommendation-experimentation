@@ -323,7 +323,7 @@ def main(MODEL_ARCHITECTURE, PLOT, VERBOSE, TUNE, CONFIG):
         try:
             # Get the class by name from global scope
             model_class = globals()[MODEL_ARCHITECTURE]
-            model = model_class(n_users=n_users, n_items=n_items).to(device)
+            model = model_class(n_users=n_users, n_items=n_items, kwarg).to(device)
         except KeyError:
             raise ValueError(
                 f"Model architecture '{MODEL_ARCHITECTURE}' not found in code."
