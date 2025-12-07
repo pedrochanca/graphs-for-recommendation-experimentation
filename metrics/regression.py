@@ -5,82 +5,10 @@ import torch
 
 from sklearn.metrics import root_mean_squared_error
 
+
 # --------------------------------------------------------------------------------------
-# ----- Non-binary Target
+# ----- Helpers
 # --------------------------------------------------------------------------------------
-
-
-def rmse(
-    model: torch.nn.Module,
-    test_loader: torch.utils.data.DataLoader,
-    device: torch.device,
-    mode: Literal["per_sample", "batch_mean"] = "per_sample",
-    verbose: bool = False,
-) -> float:
-    """
-    Compute RMSE on a test set using either per-sample or per-batch-mean aggregation.
-
-    Each batch from `test_loader` is expected to be a dict with keys:
-        - "users": user IDs (ignored for the metric)
-        - "items": item IDs (ignored for the metric)
-        - "targets": true ratings
-
-    Parameters
-    ----------
-    model
-        Trained PyTorch model that takes (users, items) and outputs predictions.
-    test_loader
-        DataLoader yielding batches as dicts with "users", "items", "targets".
-    device
-        Device on which to run inference (e.g., torch.device("cuda") or torch.device("cpu")).
-    mode
-        Valid values:
-        - "per_sample": standard RMSE over all individual predictions.
-        - "batch_mean": RMSE over per-batch mean predictions vs. per-batch mean targets.
-    verbose: If True, prints predictions and targets per batch.
-
-    Returns
-    -------
-    rmse
-        The computed root mean squared error as a float.
-    """
-    model.eval()
-
-    pred_list = []
-    true_list = []
-
-    with torch.no_grad():
-        for batch in test_loader:
-            users = batch["users"].to(device)
-            items = batch["items"].to(device)
-            targets = batch["targets"].to(device)
-
-            preds = model(users, items)
-            trues = targets.view(targets.size(0), -1).to(torch.float32)
-
-            if mode == "per_sample":
-                # Standard RMSE across all individual samples
-                pred_list += preds.view(-1).cpu().tolist()
-                true_list += trues.view(-1).cpu().tolist()
-
-            elif mode == "batch_mean":
-                # RMSE of per-batch averages
-                batch_pred_mean = preds.mean().item()
-                batch_true_mean = trues.mean().item()
-                pred_list.append(batch_pred_mean)
-                true_list.append(batch_true_mean)
-
-            else:
-                raise ValueError(
-                    f"Unknown mode: {mode}. Use 'per_sample' or 'batch_mean'."
-                )
-
-            if verbose:
-                print(f"Predictions: {preds}")
-                print(f"Targets: {trues}")
-
-    rmse = root_mean_squared_error(true_list, pred_list)
-    return rmse
 
 
 def collect_user_predictions(
@@ -137,6 +65,50 @@ def collect_user_predictions(
                 user_pred_true[user_id].append((pred, true))
 
     return user_pred_true
+
+
+# --------------------------------------------------------------------------------------
+# ----- Metrics
+# --------------------------------------------------------------------------------------
+
+
+def rmse(
+    user_pred_true: Dict[int, List[Tuple[float, float]]],
+    verbose: bool = False,
+) -> float:
+    """
+    Compute RMSE on a test set using the output of collect_user_predictions.
+
+    This calculates the global RMSE (equivalent to 'per_sample' mode).
+
+    Parameters
+    ----------
+    user_pred_true
+        A dictionary mapping each user_id (int) to a list of (predicted_value,
+        true_value) tuples.
+    verbose
+        If True, prints predictions and targets during collection.
+
+    Returns
+    -------
+    score
+        The computed root mean squared error.
+    """
+    pred_list = []
+    true_list = []
+
+    # Flatten the dictionary to get global lists of predictions and targets
+    for user_id, interactions in user_pred_true.items():
+        for pred, true in interactions:
+            pred_list.append(pred)
+            true_list.append(true)
+
+            if verbose:
+                print("user_id: {}; pred: {}; true: {}".format(user_id, pred, true))
+
+    score = root_mean_squared_error(true_list, pred_list)
+
+    return score
 
 
 def precision_recall_at_k(

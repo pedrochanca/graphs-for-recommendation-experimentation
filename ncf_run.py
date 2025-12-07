@@ -201,8 +201,17 @@ def main():
         choices=["SimpleNCF", "DeepNCF"],
         help="Model architecture to use: SimpleNCF or DeepNCF",
     )
+    parser.add_argument(
+        "--plot",
+        type=bool,
+        default=False,
+        choices=[True, False],
+        help="Plot values: True or False",
+    )
+
     args = parser.parse_args()
     MODEL_ARCHITECTURE = args.model
+    PLOT = args.plot
 
     VERBOSE = True
 
@@ -251,21 +260,23 @@ def main():
     )
 
     # Plot Loss
-    plt.figure()
-    plt.plot(all_losses_list)
-    plt.show()
+    if PLOT:
+        plt.figure()
+        plt.plot(all_losses_list)
+        plt.show()
 
     # ----------------------------------------------------------------------------------
     # ------ Evaluation (Test set)
     # ----------------------------------------------------------------------------------
+    print("")
+    user_pred_true = collect_user_predictions(model, test_loader, device)
 
     # Standard, accurate RMSE over all individual ratings
-    rmse_per_sample = rmse(model, test_loader, device, mode="per_sample")
-    print("Per-sample RMSE: {}".format(np.round(rmse_per_sample, 4)))
+    rmse_score = rmse(user_pred_true)
+    print("RMSE: {}\n".format(np.round(rmse_score, 4)))
 
     K = [1, 3, 5, 10, 20, 50, 100]
     THRESHOLD = 3.5
-    user_pred_true = collect_user_predictions(model, test_loader, device)
 
     for k in K:
 
