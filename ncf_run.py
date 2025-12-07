@@ -111,7 +111,9 @@ def prep_batch(
     return train_loader, test_loader
 
 
-def train_model(train_loader, device, model, loss_func, optimizer, epochs: int = 1):
+def train_model(
+    train_loader, device, model, loss_func, optimizer, scheduler, epochs: int = 1
+):
     """
     epochs: # nb. of times we go through the train set
 
@@ -185,45 +187,27 @@ def train_model(train_loader, device, model, loss_func, optimizer, epochs: int =
                 total_loss = 0
                 total_samples = 0
 
+        if scheduler:
+            scheduler.step()
+
     return model, all_losses_list
 
 
-def main():
+def main(MODEL_ARCHITECTURE, PLOT, VERBOSE):
 
-    # setup Argument Parser
-    parser = argparse.ArgumentParser(description="Train NCF models")
+    # ----------------------------------------------------------------------------------
+    # ------ Parameters
+    # ----------------------------------------------------------------------------------
 
-    # define the --model argument
-    parser.add_argument(
-        "--model",
-        type=str,
-        default="DeepNCF",
-        choices=["SimpleNCF", "DeepNCF"],
-        help="Model architecture to use: SimpleNCF or DeepNCF",
-    )
-    parser.add_argument(
-        "--plot",
-        action="store_true",  # Sets value to True if argument is present
-        help="Enable plotting",
-    )
-
-    parser.add_argument(
-        "--verbose",
-        action="store_true",  # Sets value to True if argument is present
-        help="Enable verbose",
-    )
-
-    args = parser.parse_args()
-    MODEL_ARCHITECTURE = args.model
-    PLOT = args.plot
-    VERBOSE = args.verbose
-
-    # Train parameters
     STEP_SIZE = 3
     GAMMA = 0.7
     EPOCHS = 1
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    # ----------------------------------------------------------------------------------
+    # ------ Data / batch setup
+    # ----------------------------------------------------------------------------------
 
     df = pd.read_csv("datasets/ml-latest-small/ratings.csv")
     df.rename(
@@ -234,7 +218,10 @@ def main():
     train_set, test_set, n_users, n_items = prep_datasets(df, verbose=VERBOSE)
     train_loader, test_loader = prep_batch(train_set, test_set, verbose=VERBOSE)
 
-    # --- DYNAMIC MODEL INSTANTIATION ---
+    # ----------------------------------------------------------------------------------
+    # ------ Model Dynamic Instantiation
+    # ----------------------------------------------------------------------------------
+
     print(f"Initializing {MODEL_ARCHITECTURE}...")
     try:
         # Get the class by name from global scope
@@ -245,6 +232,12 @@ def main():
             f"Model architecture '{MODEL_ARCHITECTURE}' not found in code."
         )
 
+    # ----------------------------------------------------------------------------------
+    # ------ Train
+    # ----------------------------------------------------------------------------------
+
+    loss_func = nn.MSELoss(reduction="none")
+
     optimizer = torch.optim.Adam(model.parameters())
 
     # Every `step_size` calls to scheduler.step(), multiply the learning rate by `gamma`
@@ -252,18 +245,11 @@ def main():
         optimizer, step_size=STEP_SIZE, gamma=GAMMA
     )
 
-    loss_func = nn.MSELoss(reduction="none")
-
-    # ----------------------------------------------------------------------------------
-    # ------ Train
-    # ----------------------------------------------------------------------------------
-
     model, all_losses_list = train_model(
-        train_loader, device, model, loss_func, optimizer, epochs=EPOCHS
+        train_loader, device, model, loss_func, optimizer, scheduler, epochs=EPOCHS
     )
 
     # Plot Loss
-    print(PLOT)
     if PLOT:
         plt.figure()
         plt.plot(all_losses_list)
@@ -272,6 +258,7 @@ def main():
     # ----------------------------------------------------------------------------------
     # ------ Evaluation (Test set)
     # ----------------------------------------------------------------------------------
+
     print("")
     user_pred_true = collect_user_predictions(model, test_loader, device)
 
@@ -298,4 +285,27 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # setup Argument Parser
+    parser = argparse.ArgumentParser(description="Train NCF models")
+
+    # define the --model argument
+    parser.add_argument(
+        "--model",
+        type=str,
+        default="DeepNCF",
+        choices=["SimpleNCF", "DeepNCF"],
+        help="Model architecture to use: SimpleNCF or DeepNCF",
+    )
+    parser.add_argument(
+        "--plot",
+        action="store_true",  # Sets value to True if argument is present
+        help="Enable plotting",
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",  # Sets value to True if argument is present
+        help="Enable verbose",
+    )
+    args = parser.parse_args()
+
+    main(MODEL_ARCHITECTURE=args.model, PLOT=args.plot, VERBOSE=args.verbose)
