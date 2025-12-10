@@ -39,6 +39,7 @@ python -m ncf.run --model DeepNCF --tune --plot --verbose
 
 2. Amazon Reviews (books)
     - To be used for Implicit Feedback.
+    - Link: https://amazon-reviews-2023.github.io
 
 ## SimpleNCF
 
