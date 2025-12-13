@@ -1,9 +1,11 @@
-# Metrics
+## Metrics
 
 This module implements standard evaluation metrics for Recommender Systems, focusing on 
 both **Target Prediction** (Accuracy) and **Ranking Quality** (Relevance).
 
-## Binary Relevance
+---
+
+### Binary Relevance
 
 Most ranking metrics (Precision, Recall, NDCG, Hit Rate) require classifying items as 
 "Relevant" or "Not Relevant."
@@ -16,7 +18,7 @@ The threshold depends on the target variable being considered. For example:
 * Rating (**explicit feedback**): values vary between 0 and 5 $\rightarrow$ threshold = 3.5
 * Click (**implicit feedback**): binary value 0 / 1 $\rightarrow$ threshold = 0.5
 
-### Top-K Evaluation
+#### Top-K Evaluation
 
 Ranking metrics are computed on the **Top-K** items predicted by the model for each user.
 1.  All test items for a user are sorted by their **Predicted Score** (descending).
@@ -25,9 +27,9 @@ Ranking metrics are computed on the **Top-K** items predicted by the model for e
 
 --- 
 
-## Regression Metrics
+### Regression-based
 
-### RMSE (Root Mean Squared Error)
+#### RMSE (Root Mean Squared Error)
 **Type**: Regression / Accuracy
 **Goal**: Measures how close the predicted ratings are to the true ratings.
 
@@ -40,9 +42,9 @@ $$
 
 --- 
 
-## Ranking Metrics
+### Ranking-based
 
-### Precision@K
+#### Precision@K
 **Type**: Ranking
 **Goal**: Measures the proportion of relevant items within the recommended Top-K list.
 
@@ -57,7 +59,7 @@ $$
 
 ---
 
-### Recall@K
+#### Recall@K
 **Type**: Ranking
 **Goal**: Measures how many relevant items the model found, compared to how many exist in total for that user.
 
@@ -73,7 +75,7 @@ $$
 
 ---
 
-### Hit Rate@K
+#### Hit Rate@K
 **Type**: Ranking
 **Goal**: A binary metric indicating if *at least one* relevant item appeared in the recommendation list.
 
@@ -86,7 +88,7 @@ $$
 
 ---
 
-### NDCG@K (Normalized Discounted Cumulative Gain)
+#### NDCG@K (Normalized Discounted Cumulative Gain)
 **Type**: Ranking
 **Goal**: Measures ranking quality, giving higher importance to relevant items appearing **higher** up the list.
 
@@ -114,7 +116,7 @@ The DCG score of a hypothetical "Perfect Ordering" where all relevant items are 
 
 ---
 
-## Usage
+### Usage
 
 The main entry point is `compute_metrics`.
 
