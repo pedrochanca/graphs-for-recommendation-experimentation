@@ -1,31 +1,33 @@
-# Recommendation Metrics
+# Metrics
 
-## Regression-based
+This module implements standard evaluation metrics for Recommender Systems, focusing on 
+both **Target Prediction** (Accuracy) and **Ranking Quality** (Relevance).
 
-This module implements standard evaluation metrics for Recommender Systems, focusing on both **Rating Prediction** (Accuracy) and **Ranking Quality** (Relevance).
+## Binary Relevance
 
-### Core Concepts
-
-#### Binary Relevance
-
-Most ranking metrics (Precision, Recall, NDCG, Hit Rate) require classifying items as "Relevant" or "Not Relevant."
+Most ranking metrics (Precision, Recall, NDCG, Hit Rate) require classifying items as 
+"Relevant" or "Not Relevant."
 
 Here a **Thresholding** approach is used:
-* **Relevant (1)**: True Rating $\ge$ `threshold` (default: 3.5)
+* **Relevant (1)**: True Rating $\ge$ `threshold`
 * **Not Relevant (0)**: True Rating $<$ `threshold`
 
-#### Top-K Evaluation
+The threshold depends on the target variable being considered. For example:
+* Rating (**explicit feedback**): values vary between 0 and 5 $\rightarrow$ threshold = 3.5
+* Click (**implicit feedback**): binary value 0 / 1 $\rightarrow$ threshold = 0.5
+
+### Top-K Evaluation
 
 Ranking metrics are computed on the **Top-K** items predicted by the model for each user.
 1.  All test items for a user are sorted by their **Predicted Score** (descending).
 2.  The top $K$ items are selected as the recommendation list.
 3.  The **True Ratings** of these $K$ items are compared against the threshold.
 
----
+--- 
 
-### Implemented Metrics
+## Regression Metrics
 
-#### RMSE (Root Mean Squared Error)
+### RMSE (Root Mean Squared Error)
 **Type**: Regression / Accuracy
 **Goal**: Measures how close the predicted ratings are to the true ratings.
 
@@ -36,9 +38,11 @@ $$
 * **Logic**: Calculated globally across **ALL** test samples for all users. It does not depend on ranking or the threshold.
 * **Interpretation**: Lower is better. 0.0 is perfect accuracy.
 
----
+--- 
 
-#### Precision@K
+## Ranking Metrics
+
+### Precision@K
 **Type**: Ranking
 **Goal**: Measures the proportion of relevant items within the recommended Top-K list.
 
@@ -53,7 +57,7 @@ $$
 
 ---
 
-#### Recall@K
+### Recall@K
 **Type**: Ranking
 **Goal**: Measures how many relevant items the model found, compared to how many exist in total for that user.
 
@@ -69,7 +73,7 @@ $$
 
 ---
 
-#### Hit Rate@K
+### Hit Rate@K
 **Type**: Ranking
 **Goal**: A binary metric indicating if *at least one* relevant item appeared in the recommendation list.
 
@@ -82,7 +86,7 @@ $$
 
 ---
 
-#### NDCG@K (Normalized Discounted Cumulative Gain)
+### NDCG@K (Normalized Discounted Cumulative Gain)
 **Type**: Ranking
 **Goal**: Measures ranking quality, giving higher importance to relevant items appearing **higher** up the list.
 
@@ -110,7 +114,7 @@ The DCG score of a hypothetical "Perfect Ordering" where all relevant items are 
 
 ---
 
-### Usage
+## Usage
 
 The main entry point is `compute_metrics`.
 

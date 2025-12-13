@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 
 
 from ncf.model import SimpleNCF, DeepNCF
-from metrics.regression import collect_user_predictions, compute_metrics
+from metrics.engine import collect_user_predictions, compute_metrics
 
 
 def load_config(path):
